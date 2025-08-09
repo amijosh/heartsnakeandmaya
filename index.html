@@ -18,7 +18,7 @@
             margin: 10px auto;
             touch-action: none;
         }
-        #controls {
+        #controls, #levelControls {
             margin-top: 10px;
         }
         button {
@@ -67,9 +67,16 @@
 <h1>❤️ Snake Love Game ❤️</h1>
 <div id="score">Score: 0</div>
 <canvas id="gameCanvas" width="400" height="400"></canvas>
+
 <div id="controls">
     <button onclick="startGame()">Start</button>
     <button onclick="stopGame()">Stop</button>
+</div>
+
+<div id="levelControls">
+    <button onclick="setLevel(1)">Level 1</button>
+    <button onclick="setLevel(2)">Level 2</button>
+    <button onclick="setLevel(3)">Level 3</button>
 </div>
 
 <div class="touch-controls" id="mobileControls">
@@ -93,9 +100,10 @@ let direction = null;
 let heart;
 let game;
 let score = 0;
-let messages = ["I LOVE YOU 3000", "My sunflower", "My little chef", "My cupcake", "My little legs", "My darlingggg"];
+let messages = ["I LOVE YOU 3000", "My sunflower", "My little chef", "My cupcake"];
 let currentMessage = "";
 let messageTimeout;
+let speed = 200; // default speed (Level 1)
 
 document.addEventListener("keydown", directionControl);
 
@@ -202,11 +210,23 @@ function startGame() {
     document.getElementById("score").innerText = "Score: " + score;
     currentMessage = "";
     spawnHeart();
-    game = setInterval(drawGame, 150);
+    game = setInterval(drawGame, speed);
 }
 
 function stopGame() {
     clearInterval(game);
+}
+
+// Change level and speed
+function setLevel(level) {
+    if (level === 1) speed = 200;  // slow
+    if (level === 2) speed = 150;  // medium
+    if (level === 3) speed = 100;  // fast
+
+    if (game) { // restart with new speed if running
+        clearInterval(game);
+        game = setInterval(drawGame, speed);
+    }
 }
 </script>
 </body>
