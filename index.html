@@ -1,107 +1,212 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Snake Game with Hearts</title>
-<style>
-  body { text-align: center; background-color: #f8e1f4; font-family: Arial, sans-serif; }
-  canvas { background-color: #fff; display: block; margin: 20px auto; border: 2px solid #000; }
-  #message { font-size: 24px; font-weight: bold; color: #d6336c; margin-top: 10px; }
-  button { padding: 10px 20px; font-size: 18px; margin: 10px; border: none; border-radius: 8px; cursor: pointer; background-color: #ff6699; color: #fff; }
-  button:hover { background-color: #e05585; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Love Game</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background: pink;
+            margin: 0;
+        }
+        canvas {
+            border: 2px solid black;
+            background: white;
+            display: block;
+            margin: 10px auto;
+            touch-action: none;
+        }
+        #controls {
+            margin-top: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 18px;
+            border-radius: 8px;
+            border: none;
+            background: red;
+            color: white;
+        }
+        .touch-controls {
+            display: none; /* hidden by default */
+            flex-direction: column;
+            align-items: center;
+            margin-top: 15px;
+        }
+        .row {
+            display: flex;
+        }
+        .touch-btn {
+            width: 60px;
+            height: 60px;
+            background: purple;
+            margin: 5px;
+            border-radius: 8px;
+            font-size: 22px;
+            color: white;
+            border: none;
+        }
+        @media (max-width: 600px) {
+            .touch-controls {
+                display: flex; /* show only on small screens */
+            }
+        }
+        #score {
+            font-size: 20px;
+            margin-top: 5px;
+            font-weight: bold;
+            color: darkred;
+        }
+    </style>
 </head>
 <body>
-<h1>Snake Game ❤️</h1>
+
+<h1>❤️ Snake Love Game ❤️</h1>
+<div id="score">Score: 0</div>
 <canvas id="gameCanvas" width="400" height="400"></canvas>
-<div id="message"></div>
-<button id="startBtn">Start</button>
-<button id="stopBtn">Stop</button>
+<div id="controls">
+    <button onclick="startGame()">Start</button>
+    <button onclick="stopGame()">Stop</button>
+</div>
+
+<div class="touch-controls" id="mobileControls">
+    <div class="row">
+        <button class="touch-btn" onclick="changeDirection('UP')">⬆</button>
+    </div>
+    <div class="row">
+        <button class="touch-btn" onclick="changeDirection('LEFT')">⬅</button>
+        <button class="touch-btn" onclick="changeDirection('DOWN')">⬇</button>
+        <button class="touch-btn" onclick="changeDirection('RIGHT')">➡</button>
+    </div>
+</div>
 
 <script>
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-const box = 20;
+let box = 20;
 let snake = [{ x: 9 * box, y: 10 * box }];
-let direction;
-let hearts = [];
+let direction = null;
+let heart;
 let game;
+let score = 0;
 let messages = ["I LOVE YOU 3000", "My sunflower", "My little chef", "My cupcake"];
+let currentMessage = "";
+let messageTimeout;
 
-function createHeart() {
-  let heartX = Math.floor(Math.random() * (canvas.width / box)) * box;
-  let heartY = Math.floor(Math.random() * (canvas.height / box)) * box;
-  hearts = [{ x: heartX, y: heartY }];
+document.addEventListener("keydown", directionControl);
+
+function directionControl(event) {
+    if (event.keyCode == 37 && direction != "RIGHT") direction = "LEFT";
+    else if (event.keyCode == 38 && direction != "DOWN") direction = "UP";
+    else if (event.keyCode == 39 && direction != "LEFT") direction = "RIGHT";
+    else if (event.keyCode == 40 && direction != "UP") direction = "DOWN";
+}
+
+function changeDirection(dir) {
+    if (dir === "LEFT" && direction != "RIGHT") direction = "LEFT";
+    else if (dir === "UP" && direction != "DOWN") direction = "UP";
+    else if (dir === "RIGHT" && direction != "LEFT") direction = "RIGHT";
+    else if (dir === "DOWN" && direction != "UP") direction = "DOWN";
 }
 
 function drawHeart(x, y) {
-  ctx.fillStyle = "#ff3366";
-  ctx.beginPath();
-  ctx.moveTo(x + box / 2, y + box / 3);
-  ctx.bezierCurveTo(x + box / 2, y, x, y, x, y + box / 3);
-  ctx.bezierCurveTo(x, y + box * 2 / 3, x + box / 2, y + box, x + box / 2, y + box);
-  ctx.bezierCurveTo(x + box / 2, y + box, x + box, y + box * 2 / 3, x + box, y + box / 3);
-  ctx.bezierCurveTo(x + box, y, x + box / 2, y, x + box / 2, y + box / 3);
-  ctx.fill();
+    ctx.fillStyle = "red";
+    ctx.beginPath();
+    ctx.moveTo(x + box / 2, y + box / 2);
+    ctx.bezierCurveTo(x + box / 2, y, x, y, x, y + box / 4);
+    ctx.bezierCurveTo(x, y + box / 2, x + box / 2, y + box, x + box / 2, y + box);
+    ctx.bezierCurveTo(x + box / 2, y + box, x + box, y + box / 2, x + box, y + box / 4);
+    ctx.bezierCurveTo(x + box, y, x + box / 2, y, x + box / 2, y + box / 2);
+    ctx.fill();
 }
 
-document.addEventListener("keydown", (event) => {
-  if (event.keyCode === 37 && direction !== "RIGHT") direction = "LEFT";
-  else if (event.keyCode === 38 && direction !== "DOWN") direction = "UP";
-  else if (event.keyCode === 39 && direction !== "LEFT") direction = "RIGHT";
-  else if (event.keyCode === 40 && direction !== "UP") direction = "DOWN";
-});
+function spawnHeart() {
+    let valid = false;
+    while (!valid) {
+        heart = {
+            x: Math.floor(Math.random() * 20) * box,
+            y: Math.floor(Math.random() * 20) * box
+        };
+        valid = !snake.some(part => part.x === heart.x && part.y === heart.y);
+    }
+}
 
-document.getElementById("startBtn").addEventListener("click", startGame);
-document.getElementById("stopBtn").addEventListener("click", stopGame);
+function drawGame() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-document.addEventListener("keydown", (e) => {
-  if (e.code === "Space") startGame();
-});
+    // Draw snake
+    ctx.fillStyle = "black";
+    for (let i = 0; i < snake.length; i++) {
+        ctx.fillRect(snake[i].x, snake[i].y, box, box);
+    }
+
+    // Draw heart
+    drawHeart(heart.x, heart.y);
+
+    // Show message
+    if (currentMessage) {
+        ctx.fillStyle = "purple";
+        ctx.font = "18px Arial";
+        ctx.fillText(currentMessage, canvas.width / 2 - ctx.measureText(currentMessage).width / 2, 20);
+    }
+
+    let snakeX = snake[0].x;
+    let snakeY = snake[0].y;
+
+    if (direction == "LEFT") snakeX -= box;
+    if (direction == "UP") snakeY -= box;
+    if (direction == "RIGHT") snakeX += box;
+    if (direction == "DOWN") snakeY += box;
+
+    // Collision with walls
+    if (snakeX < 0 || snakeY < 0 || snakeX >= canvas.width || snakeY >= canvas.height) {
+        stopGame();
+        alert("Game Over! Your score: " + score);
+        return;
+    }
+
+    // Collision with self
+    for (let i = 1; i < snake.length; i++) {
+        if (snakeX === snake[i].x && snakeY === snake[i].y) {
+            stopGame();
+            alert("Game Over! Your score: " + score);
+            return;
+        }
+    }
+
+    // Eat heart
+    if (snakeX == heart.x && snakeY == heart.y) {
+        score++;
+        document.getElementById("score").innerText = "Score: " + score;
+        currentMessage = messages[Math.floor(Math.random() * messages.length)];
+        clearTimeout(messageTimeout);
+        messageTimeout = setTimeout(() => currentMessage = "", 3000);
+        spawnHeart();
+    } else {
+        snake.pop();
+    }
+
+    let newHead = { x: snakeX, y: snakeY };
+    snake.unshift(newHead);
+}
 
 function startGame() {
-  snake = [{ x: 9 * box, y: 10 * box }];
-  direction = null;
-  createHeart();
-  clearInterval(game);
-  game = setInterval(draw, 150);
+    if (game) clearInterval(game);
+    direction = null;
+    snake = [{ x: 9 * box, y: 10 * box }];
+    score = 0;
+    document.getElementById("score").innerText = "Score: " + score;
+    currentMessage = "";
+    spawnHeart();
+    game = setInterval(drawGame, 150);
 }
 
 function stopGame() {
-  clearInterval(game);
-}
-
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  for (let i = 0; i < snake.length; i++) {
-    ctx.fillStyle = "black";
-    ctx.fillRect(snake[i].x, snake[i].y, box, box);
-  }
-  drawHeart(hearts[0].x, hearts[0].y);
-
-  let snakeX = snake[0].x;
-  let snakeY = snake[0].y;
-
-  if (direction === "LEFT") snakeX -= box;
-  if (direction === "UP") snakeY -= box;
-  if (direction === "RIGHT") snakeX += box;
-  if (direction === "DOWN") snakeY += box;
-
-  if (snakeX >= canvas.width) snakeX = 0;
-  if (snakeX < 0) snakeX = canvas.width - box;
-  if (snakeY >= canvas.height) snakeY = 0;
-  if (snakeY < 0) snakeY = canvas.height - box;
-
-  if (snakeX === hearts[0].x && snakeY === hearts[0].y) {
-    snake.unshift({ x: snakeX, y: snakeY });
-    document.getElementById("message").textContent = messages[Math.floor(Math.random() * messages.length)];
-    createHeart();
-  } else {
-    snake.pop();
-    snake.unshift({ x: snakeX, y: snakeY });
-  }
+    clearInterval(game);
 }
 </script>
 </body>
